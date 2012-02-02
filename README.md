@@ -1,4 +1,4 @@
-A simple tool for migrating issues from Sifter to Github Issues.
+A simple tool for migrating issues from Sifter to Github Issues. Nowhere near complete yet.
 
 Requirements
 ============
