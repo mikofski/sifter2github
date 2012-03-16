@@ -11,6 +11,7 @@ class SifterIssues(object):
         issues = []
         sifter = csv.DictReader(open(path_to_csv,'r'))
         for row in sifter:
+            row['Number'] = int(row['Number'])
             issues.append(row)
         self.issues = sorted(issues,key=lambda k: k['Number'])
 
@@ -25,29 +26,23 @@ class GithubRepo(object):
         self.account = github.GitHub(username, token)
         self.repo = repo
 
-    def get_last_issue_number(self):
-        return len(self.account.issues.list(self.user,self.repo))
-
 
 def import_issues(gh, sifter):
-    # issue number for new issue expected to be 1 plus the
-    # last issue already in the repo
-    i_num = gh.get_last_issue_number() + 1
     for i in sifter.issues:
-        subject = i['Subject'].replace("\\","/").replace("'","-").replace("\"","-")
-        descr = i['Description'].replace("\\","/").replace("'","-").replace("\"","-")
+        print "Importing sifter issue #", i['Number'],"...",
+        subject = i['Subject'].replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
+        descr = i['Description'].replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
         descr = "---Migrated from Sifter - Sifter issue " + str(i['Number']) + "---\n" + descr
-        milestone = i['Milestone'].replace("\\","/").replace("'","-").replace("\"","-")
-        category = i['Category'].replace("\\","/").replace("'","-").replace("\"","-")
-        gh.account.issues.new(gh.user, gh.repo, subject, descr)
+        milestone = i['Milestone'].replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
+        category = i['Category'].replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
+        new_issue = gh.account.issues.new(gh.user, gh.repo, subject, descr)
         if milestone:
-            gh.account.issues.add_label(gh.user, gh.repo, i_num, milestone)
+            gh.account.issues.add_label(gh.user, gh.repo, new_issue.number, milestone)
         if category:
-            gh.account.issues.add_label(gh.user, gh.repo, i_num, category)
+            gh.account.issues.add_label(gh.user, gh.repo, new_issue.number, category)
         if i['Status'] == "Closed" or i['Status'] == "Resolved":
-            gh.account.issues.close(gh.user, gh.repo, i_num)
-        print "Imported Sifter issue #", i['Number']," to Github #", i_num
-        i_num += 1
+            gh.account.issues.close(gh.user, gh.repo, new_issue.number)
+        print "done. Github issue #", new_issue.number
         time.sleep(2)
 
 

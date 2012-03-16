@@ -1,15 +1,16 @@
-A simple tool for migrating issues from Sifter to Github Issues. Nowhere near complete yet.
+A simple tool for migrating issues from Sifter to Github.
 
-Requirements
-============
+## Requirements ##
 
-sifter-python by bryanmikaelian
-py-github by dustin
+py-github by @dustin
 
-Usage
-=====
+## Usage ##
 
-    from sifter2github import Sifter2Github
+ 1. Download issues from Sifter as CSV
+ 2. Run the following:
 
-    m = Sifter2Github([sifter_host],[sifter_key],[github_username],[github_token])
-    m.migrate_all_issues([sifter_project],[github_repo])
+    from impot_from_csv import *
+
+    s = SifterIssues('path/to/csv')
+    g = GithubRepo(username, token, repository)
+    import_issues(g, s)
