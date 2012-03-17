@@ -7,7 +7,6 @@ A simple tool for migrating issues from Sifter to Github.
 ## Usage ##
 
  1. Download issues from Sifter as CSV
- 2. Edit fields in settings.py to specify
  2. Run the following:
 
 
