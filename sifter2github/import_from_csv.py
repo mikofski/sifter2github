@@ -19,7 +19,7 @@ class SifterIssues(object):
 class GithubRepo(object):
     """
     Establishes connection to Github repo
-    using github-python
+    using py-github
     """
     def __init__(self, username, token, repo):
         self.user = username
