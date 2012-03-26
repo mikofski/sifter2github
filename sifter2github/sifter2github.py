@@ -34,4 +34,4 @@ def sifter2github(path_to_csv, username, token, repository, path_to_py_github='~
 if __name__ == '__main__':
 	import sys
 	sys.path.append(path_to_py_github)
-    sifter2github(sys.argv[1:4]) # sys.argv[0] is the module name
+    sifter2github(*sys.argv[1:]) # sys.argv[0] is the module name

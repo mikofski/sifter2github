@@ -1,4 +1,4 @@
-from py_github.github import github
+from github import github
 import csv
 import time
 
