@@ -8,13 +8,17 @@ class SifterIssues(object):
     Use Sifter's 'Download as CSV' feature to save a file
     """
     def __init__(self, path_to_csv):
-        issues = []
-        sifter = csv.DictReader(open(path_to_csv,'r'))
-        for row in sifter:
-            row['Number'] = int(row['Number'])
-            issues.append(row)
-        self.issues = sorted(issues,key=lambda k: k['Number'])
-
+        if type(path_to_csv) == str:
+            issues = []
+            sifter = csv.DictReader(open(path_to_csv,'r'))
+            for row in sifter:
+                row['Number'] = int(row['Number'])
+                issues.append(row)
+            self.issues = sorted(issues,key=lambda k: k['Number'])
+        elif type(path_to_csv) in set([list,tuple]) and len(path_to_csv) == 3:
+            self.issues = sifter.Sifter(*path_to_csv)
+        elif type(path_to_csv) == dict and len(path_to_csv) == 3:
+            self.issues = sifter.Sifter(**path_to_csv)
 
 class GithubRepo(object):
     """
