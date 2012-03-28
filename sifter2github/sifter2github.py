@@ -22,10 +22,15 @@
 #       
 #       
 
+<<<<<<< HEAD
 
 
 def sifter2github(path_to_csv, username, token, repository, path_to_py_github='~/Downloads/py-github'):
     from import_from_csv import *
+=======
+def sifter2github(path_to_csv, username, token, repository):
+    from import_from_csv *
+>>>>>>> 837797ade2dfe90b65e2e9253593edb5d0055c03
     s = SifterIssues(path_to_csv)
     g = GithubRepo(username, token, repository)
     import_issues(g, s)
@@ -33,5 +38,8 @@ def sifter2github(path_to_csv, username, token, repository, path_to_py_github='~
 
 if __name__ == '__main__':
     import sys
+<<<<<<< HEAD
     sys.path.append(path_to_py_github)
+=======
+>>>>>>> 837797ade2dfe90b65e2e9253593edb5d0055c03
     sifter2github(*sys.argv[1:]) # sys.argv[0] is the module name
