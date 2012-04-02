@@ -17,16 +17,19 @@ class SifterIssues(object):
                 row['Number'] = int(row['Number'])
                 issues.append(row)
             self.issues = sorted(issues,key=lambda k: k['Number'])
+            self.src = 'csv'
         elif type(path_to_csv) in set([list,tuple]) and len(path_to_csv) == 3:
             _sifter = Sifter(*path_to_csv)
             self.issues = _sifter.issues
-            self.issues = _sifter.milestones
-            self.issues = _sifter.comments
+            self.milestones = _sifter.milestones
+            self.comments = _sifter.comments
+            self.src = 'api'
         elif type(path_to_csv) == dict and len(path_to_csv) == 3:
             _sifter = Sifter(**path_to_csv)
             self.issues = _sifter.issues
-            self.issues = _sifter.milestones
-            self.issues = _sifter.comments
+            self.milestones = _sifter.milestones
+            self.comments = _sifter.comments
+            self.src = 'api'
 
 class GithubRepo(object):
     """
@@ -48,7 +51,7 @@ class GithubRepo(object):
 
 
 def import_issues(gh, sifter):
-    if type(sifter) == SifterIssues:
+    if sifter.src == 'csv':
         for i in sifter.issues:
             print "Importing sifter issue #", i['Number'],"...",
             subject = i['Subject'].replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
@@ -65,7 +68,7 @@ def import_issues(gh, sifter):
                 gh.account.issues.close(gh.user, gh.repo, new_issue.number)
             print "done. Github issue #", new_issue.number
             time.sleep(2)
-    elif type(sifter) == Sifter:
+    elif sifter.src == 'api':
         n = 0 # issue counter
         for i in sifter.issues:
             print "Importing sifter issue #", i.number,"...",
