@@ -116,5 +116,5 @@ def import_issues(gh, sifter):
                     data = json.dumps({'body':c.body})
                     response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
             n += 1
-            print "done. Github issue #", new_issue.number
+            print "done. Github issue #", i.number
             time.sleep(2)
