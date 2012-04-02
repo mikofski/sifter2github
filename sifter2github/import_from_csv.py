@@ -72,7 +72,7 @@ def import_issues(gh, sifter):
     elif sifter.src == 'api':
         n = 0  # issue counter
         # make a list of Sifter milestones and user email addresses
-        milestones = [milestone.name for milestone in sifter.milestones]
+        milestones = [milestone.name.lower() for milestone in sifter.milestones]
         sifter_members = [_member.first_name + ' ' + _member.last_name for _member in sifter.users]
         # Github v3 api - list of members in org
         endpoint = '/orgs/' + gh.org + '/members'
@@ -124,7 +124,7 @@ def import_issues(gh, sifter):
             handle_exception(_e)
         if response.status_code == requests.codes.OK:
             raw_json = json.loads(response.content)
-            gh_mile_name = [milestone['title'] for milestone in raw_json]
+            gh_mile_name = [milestone['title'].lower() for milestone in raw_json]
             gh_mile_num = [milestone['number'] for milestone in raw_json]
         else:
             gh_mile_name = []
@@ -161,9 +161,9 @@ def import_issues(gh, sifter):
                 if i.milestone_name.lower() in gh_mile_name:
                     # milestone is already in Github
                     mile_num = gh_mile_num[gh_mile_name.index(i.milestone_name.lower())]
-                elif not i.milestone_name in prev_miles.keys():
+                elif not i.milestone_name.lower() in prev_miles.keys():
                     # copy milestone from Sifter to Github
-                    mile_ind = milestones.index(i.milestone_name)
+                    mile_ind = milestones.index(i.milestone_name.lower())
                     due_on = sifter.milestones[mile_ind].due_date
                     # Github v3 api - create milestone
                     endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
@@ -179,9 +179,9 @@ def import_issues(gh, sifter):
                         mile_num = raw_json['number']
                     else:
                         mile_num = None
-                    prev_miles.update({i.milestone_name: mile_num})
+                    prev_miles.update({i.milestone_name.lower(): mile_num})
                 else:
-                    mile_num = prev_miles.get(i.milestone_name)
+                    mile_num = prev_miles.get(i.milestone_name.lower())
             else:
                 mile_num = None
             # Github v3 api - create label
@@ -193,7 +193,7 @@ def import_issues(gh, sifter):
                     response.raise_for_status()
                 except Exception as _e:
                     handle_exception(_e)
-                gh_labels = gh_labels + i.category_name.lower()
+                gh_labels.append(i.category_name.lower())
             endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues'
             body = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n"
             body = body + i.description
