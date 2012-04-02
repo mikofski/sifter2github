@@ -100,12 +100,10 @@ def import_issues(gh, sifter):
             body = body + i.description
             data = json.dumps({'title':i.subject,
                                'body':body,
-                               'assignee':i.assignee_name,
+                               'assignee':gh.user,
                                'milestone':mile_num,
                                'labels':[i.category_name]})
-            print data
             response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
-            print response.status_code
             raw_json = json.loads(response.content)
             iss_num = raw_json['number']
             if i.status == "Closed" or i.status == "Resolved":
@@ -115,10 +113,8 @@ def import_issues(gh, sifter):
             if i.comment_count>0:
                 endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues' + str(iss_num) + '/comments'
                 for c in sifter.comments[n]:
-                    json_raw = json.loads(sifter.comments[n])
-                    body = json_raw['body']
-                    data = json.dumps({'body':body})
+                    data = json.dumps({'body':c.body})
                     response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
-                n += 1
+            n += 1
             print "done. Github issue #", new_issue.number
             time.sleep(2)
