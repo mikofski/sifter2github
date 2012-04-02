@@ -3,4 +3,5 @@
 .pydevproject
 .spyderproject
 .pyc
-/*/.pyc
+/*/*.pyc
+/.ropeproject/

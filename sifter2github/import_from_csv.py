@@ -2,6 +2,7 @@ from github import github
 import csv
 import time
 from sifter import Sifter
+import requests, json
 
 class SifterIssues(object):
     """
@@ -26,9 +27,17 @@ class GithubRepo(object):
     Establishes connection to Github repo
     using py-github
     """
-    def __init__(self, username, token, repo):
+    def __init__(self, username, token, repo, version=2, org=None):
         self.user = username
-        self.account = github.GitHub(username, token)
+        if not org:
+            self.org = username
+        else:
+            self.org = org
+        if version==2:
+            self.account = github.GitHub(username, token)
+        elif version==3:
+            self.url = 'https://api.github.com'
+            self.pswd = token
         self.repo = repo
 
 
@@ -53,10 +62,31 @@ def import_issues(gh, sifter):
     elif type(sifter) == Sifter:
         for i in sifter.issues:
             print "Importing sifter issue #", i.number,"...",
-            subject = i.subject.replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
-            descr = i.description.replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
-            descr = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n" + descr
-            milestone = i.milestone_name.replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
+            prev_miles = {}
+            if i.milestone_name:
+                if not i.milestone_name in set(prev_miles.keys()):
+                    mile_ind = sifter.milestones.index(i.milestone_name)
+                    due_on = sifter.milestones[mile_ind].due_date
+                    endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
+                    data = json.dumps({'title':i.milestone_name,'due_on':due_on})
+                    response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
+                    raw_json = json.loads(response.content)
+                    mile_num = raw_json['number']
+                    prev_miles.update({i.milestone_name:mile_num})
+                else:
+                    mile_num = prev_miles.get(i.milestone_name)
+            else:
+                mile_num = None
+            endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues'
+            body = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n"
+            body = body + i.description
+            data = {'title':i.subject,
+                    'body':body,
+                    'assignee':i.assignee_name,
+                    'milestone':mile_num,
+                    'labels':i.category_name}
+            response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
+            
             category = i.category_name.replace("\\","_").replace("'","-").replace("\"","-").replace("/","-").replace(":","-").replace(",","-")
             new_issue = gh.account.issues.new(gh.user, gh.repo, subject, descr)
             if milestone:

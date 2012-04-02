@@ -23,9 +23,10 @@
 #       
 
 def sifter2github(path_to_csv, username, token, repository):
-    from import_from_csv import *
+    from import_from_csv import SifterIssues, GithubRepo, import_issues
     s = SifterIssues(path_to_csv)
-    g = GithubRepo(username, token, repository)
+    g = GithubRepo(username, token, repository, version)
+    
     import_issues(g, s)
     return 0
 
