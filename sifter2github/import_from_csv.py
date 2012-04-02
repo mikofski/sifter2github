@@ -115,7 +115,7 @@ def import_issues(gh, sifter):
                     break
             member_name.append(_member)
         members = dict(zip(member_name, member_login))
-        # Github v3 api - list of milestones
+        # Github v3 api - list of open milestones
         endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
         try:
             response = requests.get(gh.url + endpoint, auth=(gh.user, gh.pswd))
@@ -130,13 +130,37 @@ def import_issues(gh, sifter):
             gh_mile_name = []
             gh_mile_num = []
             print 'HTTPError code {!s}. Github milestones not loaded.'.format(response.status_code)
+        # Github v3 api - list of closed milestones
+        endpoint = endpoint + '?state=closed'
+        try:
+            response = requests.get(gh.url + endpoint, auth=(gh.user, gh.pswd))
+            response.raise_for_status()
+        except Exception as _e:
+            handle_exception(_e)
+        if response.status_code == requests.codes.OK:
+            raw_json = json.loads(response.content)
+            gh_mile_name = gh_mile_name + [milestone['title'].lower() for milestone in raw_json]
+            gh_mile_num = gh_mile_num + [milestone['number'] for milestone in raw_json]
+        # Github v3 api - list of labels
+        endpoint = '/repos/' + gh.org + '/' + gh.repo + '/labels'
+        try:
+            response = requests.get(gh.url + endpoint, auth=(gh.user, gh.pswd))
+            response.raise_for_status()
+        except Exception as _e:
+            handle_exception(_e)
+        if response.status_code == requests.codes.OK:
+            raw_json = json.loads(response.content)
+            gh_labels = [label['name'].lower() for label in raw_json]
+        else:
+            gh_labels = []
+            print 'HTTPError code {!s}. Github labels not loaded.'.format(response.status_code)
         for i in sifter.issues:
             print "Importing Sifter issue #", i.number, "...",
             prev_miles = {}  # an empty dict for previous Sifter milestones
             if i.milestone_name:
-                if i.milestone_name in gh_mile_name:
+                if i.milestone_name.lower() in gh_mile_name:
                     # milestone is already in Github
-                    mile_num = gh_mile_num[gh_mile_name.index(i.milestone_name)]
+                    mile_num = gh_mile_num[gh_mile_name.index(i.milestone_name.lower())]
                 elif not i.milestone_name in prev_miles.keys():
                     # copy milestone from Sifter to Github
                     mile_ind = milestones.index(i.milestone_name)
@@ -160,6 +184,16 @@ def import_issues(gh, sifter):
                     mile_num = prev_miles.get(i.milestone_name)
             else:
                 mile_num = None
+            # Github v3 api - create label
+            if i.category_name and not i.category_name.lower() in gh_labels:
+                endpoint = '/repos/' + gh.org + '/' + gh.repo + '/labels'
+                data = json.dumps({'name': i.category_name})
+                try:
+                    response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
+                    response.raise_for_status()
+                except Exception as _e:
+                    handle_exception(_e)
+                gh_labels = gh_labels + i.category_name.lower()
             endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues'
             body = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n"
             body = body + i.description
@@ -168,8 +202,9 @@ def import_issues(gh, sifter):
                 assignee = gh.user
             data = {'title': i.subject,
                     'body': body,
-                    'assignee': assignee,
-                    'labels': [i.category_name]}
+                    'assignee': assignee}
+            if i.category_name:
+                data.update({'labels': [i.category_name]})            
             if mile_num:
                 data.update({'milestone': mile_num})
             data = json.dumps(data)
@@ -192,15 +227,15 @@ def import_issues(gh, sifter):
                     handle_exception(_e)
             if i.comment_count > 0:
                 endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues/' + str(iss_num) + '/comments'
-                for c in sifter.comments[n]:
-                    p = 0
+                p = 0
+                for c in sifter.comments[n]:                    
                     if p > 0 and c.body:
                         data = json.dumps({'body': c.body})
                         try:
                             response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
                         except Exception as _e:
                             handle_exception(_e)
-                        p += 1
+                    p += 1
             n += 1
             print "done. Github issue #", i.number
             time.sleep(2)
