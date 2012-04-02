@@ -71,11 +71,17 @@ def import_issues(gh, sifter):
     elif sifter.src == 'api':
         n = 0 # issue counter
         milestones = [milestone.name for milestone in sifter.milestones]
+        endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
+        response = requests.get(gh.url + endpoint,auth=(gh.user,gh.pswd))
+        raw_json = json.loads(response.content)
+        gh_milestones = [{milestone.title:milestone.number} for milestone in raw_json]
         for i in sifter.issues:
             print "Importing sifter issue #", i.number,"...",
             prev_miles = {}
             if i.milestone_name:
-                if not i.milestone_name in set(prev_miles.keys()):
+                if i.milestone_name in set(gh_milestones.keys()):
+                    mile_num = gh_milestones.get(i.milestone_name)
+                elif not i.milestone_name in set(prev_miles.keys()):
                     mile_ind = milestones.index(i.milestone_name)
                     due_on = sifter.milestones[mile_ind].due_date
                     endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
@@ -92,11 +98,13 @@ def import_issues(gh, sifter):
             body = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n"
             body = body + i.description
             data = json.dumps({'title':i.subject,
-                    'body':body,
-                    'assignee':i.assignee_name,
-                    'milestone':mile_num,
-                    'labels':i.category_name})
+                               'body':body,
+                               'assignee':i.assignee_name,
+                               'milestone':mile_num,
+                               'labels':[i.category_name]})
+            print data
             response = requests.post(gh.url + endpoint,data,auth=(gh.user,gh.pswd))
+            print response.status_code
             raw_json = json.loads(response.content)
             iss_num = raw_json['number']
             if i.status == "Closed" or i.status == "Resolved":
