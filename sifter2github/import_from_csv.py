@@ -74,14 +74,14 @@ def import_issues(gh, sifter):
         endpoint = '/repos/' + gh.org + '/' + gh.repo + '/milestones'
         response = requests.get(gh.url + endpoint,auth=(gh.user,gh.pswd))
         raw_json = json.loads(response.content)
-        gh_mile_name = [milestone.title for milestone in raw_json]
-        gh_mile_num = [milestone.number for milestone in raw_json]
+        gh_mile_name = [milestone['title'] for milestone in raw_json]
+        gh_mile_num = [milestone['number'] for milestone in raw_json]
         for i in sifter.issues:
             print "Importing sifter issue #", i.number,"...",
             prev_miles = {}
             if i.milestone_name:
                 if i.milestone_name in set(gh_mile_name):
-                    mile_num = gh_mile_num(gh_mile_name.index(i.milestone_name))
+                    mile_num = gh_mile_num[gh_mile_name.index(i.milestone_name)]
                 elif not i.milestone_name in set(prev_miles.keys()):
                     mile_ind = milestones.index(i.milestone_name)
                     due_on = sifter.milestones[mile_ind].due_date
