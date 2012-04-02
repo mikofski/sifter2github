@@ -13,3 +13,4 @@ class Sifter(object):
         self.issues = _project.issues()
         self.comments = [_issue.comments() for _issue in self.issues]
         self.milestones = _project.milestones()
+        self.users = _project.people()
