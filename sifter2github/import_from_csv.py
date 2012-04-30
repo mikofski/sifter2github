@@ -1,4 +1,3 @@
-from github import github
 import csv
 import time
 from sifter import Sifter
@@ -37,17 +36,14 @@ class GithubRepo(object):
     Establishes connection to Github repo
     using py-github
     """
-    def __init__(self, username, token, repo, version=2, org=None):
+    def __init__(self, username, token, repo, org=None):
         self.user = username
         if not org:
             self.org = username
         else:
             self.org = org
-        if version == 2:
-            self.account = github.GitHub(username, token)
-        elif version == 3:
-            self.url = 'https://api.github.com'
-            self.pswd = token
+        self.url = 'https://api.github.com'
+        self.pswd = token
         self.repo = repo
 
 
@@ -102,14 +98,14 @@ def import_issues(gh, sifter):
                     _member = raw_json['name']
                 except KeyError as _e:
                     _member = member_login[member_url.index(m)]
-                    prompt = 'Full Name for Member: {}:'.format(_member)
+                    prompt = 'Full Name for Member: {0}:'.format(_member)
                     _member = input(prompt)
             else:
                 _member = None
             while not _member in sifter_members:
-                print '{} not found in Sifter. '.format(_member),
+                print '%r not found in Sifter.', _member
                 _member = member_login[member_url.index(m)]
-                prompt = 'Re-enter Full Name for Member: {} or "skip" to skip:'.format(_member)
+                prompt = 'Re-enter Full Name for Member: {0} or "skip" to skip:'.format(_member)
                 _member = input(prompt)
                 if _member == 'skip':
                     break

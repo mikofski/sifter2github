@@ -1,4 +1,4 @@
-import account
+from sifter_py import account
 
 
 class Sifter(object):
