@@ -3,7 +3,21 @@ import time
 from sifter import Sifter
 import requests
 import json
+from sifter_py import account
 
+class Sifter(object):
+    """
+    Reads issues from Sifter using sifterapi
+    """
+    def __init__(self, host, token, project):
+        _account = account.Account(host, token)
+        _projects = _account.projects()
+        proj_names = [p.name for p in _projects]
+        _project = _projects[proj_names.index(project)]
+        self.issues = _project.issues()
+        self.comments = [_issue.comments() for _issue in self.issues]
+        self.milestones = _project.milestones()
+        self.users = _project.people()
 
 class SifterIssues(object):
     """
@@ -242,3 +256,15 @@ def handle_exception(_e):
         raise _e
     else:
         raise _e
+
+def sifter2github(path_to_csv, username, token, repository, version, org):
+    from import_from_csv import SifterIssues, GithubRepo, import_issues
+    s = SifterIssues(path_to_csv)
+    g = GithubRepo(username, token, repository, version, org)
+    
+    import_issues(g, s)
+    return 0
+
+if __name__ == '__main__':
+    import sys
+    sifter2github(*sys.argv[1:]) # sys.argv[0] is the module name

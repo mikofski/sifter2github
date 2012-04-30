@@ -12,7 +12,10 @@ config = {
 	'download_url': '',
 	'author_email': 'jeff.roche@gmail.com',
 	'version': '0.1',
-	'install_requires': ['sifter-python'],
+	'install_requires': [
+		'sifter-python',
+		'requests>=0.11.2'
+	],
 	'packages': ['sifter2github'],
 	'scripts': [],
 }
