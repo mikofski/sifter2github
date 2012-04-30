@@ -22,14 +22,3 @@
 #       
 #       
 
-def sifter2github(path_to_csv, username, token, repository, version, org):
-    from import_from_csv import SifterIssues, GithubRepo, import_issues
-    s = SifterIssues(path_to_csv)
-    g = GithubRepo(username, token, repository, version, org)
-    
-    import_issues(g, s)
-    return 0
-
-if __name__ == '__main__':
-    import sys
-    sifter2github(*sys.argv[1:]) # sys.argv[0] is the module name
