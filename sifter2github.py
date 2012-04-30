@@ -69,14 +69,14 @@ def import_issues(gh, sifter):
                 _member = raw_json['name']
             except KeyError as _e:
                 _member = member_login[member_url.index(m)]
-                prompt = 'Full Name for Member: {0}:'.format(_member)
+                prompt = 'Full Name for Github Member: {0}:'.format(_member)
                 _member = input(prompt)
         else:
             _member = None
         while not _member in sifter_members:
-            print '%r not found in Sifter.', _member
+            print '%r not found in Sifter.' % _member
             _member = member_login[member_url.index(m)]
-            prompt = 'Re-enter Full Name for Member: {0} or "skip" to skip:'.format(_member)
+            prompt = 'Re-enter Full Name for Github Member: {0} or "skip" to skip:'.format(_member)
             _member = input(prompt)
             if _member == 'skip':
                 break
@@ -121,9 +121,9 @@ def import_issues(gh, sifter):
     else:
         gh_labels = []
         print 'HTTPError code {!s}. Github labels not loaded.'.format(response.status_code)
+    prev_miles = {}  # an empty dict for previous Sifter milestones
     for i in sifter.issues:
         print "Importing Sifter issue #", i.number, "...",
-        prev_miles = {}  # an empty dict for previous Sifter milestones
         if i.milestone_name:
             if i.milestone_name.lower() in gh_mile_name:
                 # milestone is already in Github
@@ -140,6 +140,12 @@ def import_issues(gh, sifter):
                     response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
                     response.raise_for_status()
                 except Exception as _e:
+                    print "TRIED:"
+                    print "URL", gh.url
+                    print "endpoint", endpoint
+                    print "Data:", data
+                    print "GH MS orig", gh_mile_name
+                    print "GH MS new", prev_miles
                     handle_exception(_e)
                 if response.status_code == requests.codes.CREATED:
                     raw_json = json.loads(response.content)
@@ -159,13 +165,15 @@ def import_issues(gh, sifter):
                 response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
                 response.raise_for_status()
             except Exception as _e:
+                print "Tried:", data
                 handle_exception(_e)
             gh_labels.append(i.category_name.lower())
         endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues'
         body = "---Migrated from Sifter - Sifter issue " + str(i.number) + "---\n"
         body = body + i.description
-        assignee = members[i.assignee_name]
-        if not assignee:
+        if i.assignee_name in members:
+            assignee = members[i.assignee_name]
+        else:
             assignee = gh.user
         data = {'title': i.subject,
                 'body': body,
@@ -179,6 +187,7 @@ def import_issues(gh, sifter):
             response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
             response.raise_for_status()
         except Exception as _e:
+            print "Tried:", data
             handle_exception(_e)
         if response.status_code == requests.codes.CREATED:
             raw_json = json.loads(response.content)
@@ -191,6 +200,7 @@ def import_issues(gh, sifter):
             try:
                 response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
             except Exception as _e:
+                print "Tried:", data
                 handle_exception(_e)
         if i.comment_count > 0:
             endpoint = '/repos/' + gh.org + '/' + gh.repo + '/issues/' + str(iss_num) + '/comments'
@@ -201,10 +211,11 @@ def import_issues(gh, sifter):
                     try:
                         response = requests.post(gh.url + endpoint, data, auth=(gh.user, gh.pswd))
                     except Exception as _e:
+                        print "Tried:", data
                         handle_exception(_e)
                 p += 1
         n += 1
-        print "done. Github issue #", i.number
+        print "done. Github issue #", iss_num
         time.sleep(2)
 
 
@@ -260,4 +271,4 @@ if __name__ == '__main__':
 
     s = SifterIssues(SIFTER_HOST, SIFTER_TOKEN, SIFTER_PROJECT)
     g = GithubRepo(GITHUB_USER, GITHUB_PWD, GITHUB_REPO, GITHUB_ORG)
-
+    import_issues(g, s)
