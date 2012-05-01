@@ -20,7 +20,7 @@ Option 1: Inputs at command line
 - Run the following::
 
   $ cd sifter2github
-  $ python sifter2github.py sifter-host sifter-token sifter-project github-user github-password github-repo github-org
+  $ python sifter2github.py SIFTER_HOST SIFTER_TOKEN SIFTER_PROJECT GITHUB_USER GITHUB_PWD GITHUB_REPO GITHUB_ORG
 
 Option 2: Inputs in inputs.py
 -----------------------------
@@ -30,12 +30,13 @@ Option 2: Inputs in inputs.py
 
   $ python sifter2github.py
 
-Where:
+Inputs
+======
 
-- sifter-host: Sifter account/company
-- sifter-token: Sifter API token
-- sifter-project: Sifter project to migrate issues from
-- github-user: Github username used in calls to Github API. If a username match is not found from Sifter, this username will be set add the issue adder/owner
-- github-password: Password for above account
-- github-repo: Github repository to receive the issues from Sifter
-- github-org: Organization that owns the destination repository (Optional)
+- SIFTER_HOST: Sifter account/company
+- SIFTER_TOKEN: Sifter API token
+- SIFTER_PROJECT: Sifter project to migrate issues from
+- GITHUB_USER: Github username used in calls to Github API. If a username match is not found from Sifter, this username will be set add the issue adder/owner
+- GITHUB_PWD: Password for above account
+- GITHUB_REPO: Github repository to receive the issues from Sifter
+- GITHUB_ORG: Organization that owns the destination repository (Optional)
