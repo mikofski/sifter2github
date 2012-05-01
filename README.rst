@@ -3,8 +3,8 @@ A simple tool for migrating issues from Sifter to Github.
 Requirements
 ============
 
-- [sifter-python](https://github.com/bryanmikaelian/sifter-python)
-- [requests](https://github.com/kennethreitz/requests)
+- `sifter-python <https://github.com/bryanmikaelian/sifter-python>`_
+- `requests <https://github.com/kennethreitz/requests>`_
 
 Overview
 ========
